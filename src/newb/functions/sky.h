@@ -18,7 +18,7 @@ vec3 spectrum(float x) {
 }
 
 vec3 getUnderwaterCol(vec3 FOG_COLOR) {
-  return 2.0*NL_UNDERWATER_TINT*FOG_COLOR*FOG_COLOR;
+  return 1.4*NL_UNDERWATER_TINT*FOG_COLOR*FOG_COLOR;
 }
 
 vec3 getEndZenithCol() {
@@ -43,18 +43,18 @@ vec3 getSkyFactors(vec3 FOG_COLOR) {
 }
 
 vec3 getZenithCol(float rainFactor, vec3 FOG_COLOR, vec3 fs) {
-  vec3 zenithCol = NL_NIGHT_ZENITH_COL*(1.0-FOG_COLOR.b);
-  zenithCol += NL_DAWN_ZENITH_COL*((0.7*fs.x*fs.x) + (0.4*fs.x) + fs.y);
-  zenithCol = mix(zenithCol, (0.7*fs.x*fs.x + 0.3*fs.x)*NL_DAY_ZENITH_COL, fs.x*fs.x);
-  zenithCol = mix(zenithCol*(1.0+0.5*rainFactor), NL_RAIN_ZENITH_COL*fs.z*13.2, rainFactor);
+  vec3 zenithCol = NL_DAY_ZENITH_COL*(fs.x*fs.x);
+  zenithCol = mix(zenithCol, NL_DAWN_ZENITH_COL, (1.0-fs.x)*(0.6+fs.y));
+  zenithCol = mix(zenithCol, NL_NIGHT_ZENITH_COL*(1.0-FOG_COLOR.b), (1.0 - fs.x)*(1.0-fs.y));
+  zenithCol = mix(zenithCol, NL_RAIN_ZENITH_COL*fs.z*13.2, rainFactor);
 
   return zenithCol;
 }
 
 vec3 getHorizonCol(float rainFactor, vec3 FOG_COLOR, vec3 fs) {
-  vec3 horizonCol = NL_NIGHT_HORIZON_COL*(1.0-FOG_COLOR.b); 
-  horizonCol += NL_DAWN_HORIZON_COL*(((0.7*fs.x*fs.x) + (0.3*fs.x) + fs.y)*1.9); 
-  horizonCol = mix(horizonCol, 2.0*fs.x*NL_DAY_HORIZON_COL, fs.x*fs.x);
+  vec3 horizonCol = NL_DAY_HORIZON_COL*(2.0*fs.x);
+  horizonCol = mix(horizonCol, NL_DAWN_HORIZON_COL, (1.0 - fs.x)*(0.6+fs.y));
+  horizonCol = mix(horizonCol, NL_NIGHT_HORIZON_COL*(1.0-FOG_COLOR.b), (1.0-fs.x)*(1.0-fs.y));
   horizonCol = mix(horizonCol, NL_RAIN_HORIZON_COL*fs.z*19.6, rainFactor);
 
   return horizonCol;
@@ -97,35 +97,135 @@ vec3 getSunBloom(float viewDirX, vec3 horizonEdgeCol, vec3 FOG_COLOR) {
 
   float spread = smoothstep(0.0, 1.0, abs(viewDirX));
   float sunBloom = spread*spread;
-  sunBloom = 0.5*spread + sunBloom*sunBloom*sunBloom*1.5;
+  sunBloom = 0.5*spread + sunBloom*sunBloom*sunBloom*1.2;
 
   return NL_MORNING_SUN_COL*horizonEdgeCol*(sunBloom*factor*factor);
 }
 
-
-vec3 renderEndSky(vec3 horizonCol, vec3 zenithCol, vec3 viewDir, float t) {
-  t *= 0.1;
+#if NL_END_SKY_TYPE == 2
+vec3 renderEndSky(nl_skycolor skycol, vec3 viewDir, float t){
   float a = atan2(viewDir.x, viewDir.z);
 
-  float n1 = 0.5 + 0.5*sin(3.0*a + t + 10.0*viewDir.x*viewDir.y);
-  float n2 = 0.5 + 0.5*sin(5.0*a + 0.5*t + 5.0*n1 + 0.1*sin(40.0*a -4.0*t));
+  float n1 = 0.6 + 0.5*sin(11.0*a + t + 1.0*viewDir.x*viewDir.y);
+  float n2 = 0.6 + 0.5*sin(5.0*a + 0.5*t + 7.0*n1 + 0.1*sin(40.0*a -4.0*t));
 
-  float waves = 0.7*n2*n1 + 0.3*n1;
-
+  float waves = 0.5*n2*n1 + 0.4*n1;
   float grad = 0.5 + 0.5*viewDir.y;
   float streaks = waves*(1.0 - grad*grad*grad);
-  streaks += (1.0-streaks)*smoothstep(1.0-waves, -1.0, viewDir.y);
 
-  float f = 0.3*streaks + 0.7*smoothstep(1.0, -0.5, viewDir.y);
+  streaks += (0.8-streaks)*smoothstep(0.1-waves, -1.0, viewDir.y);
+
+  float f = 0.6*streaks + 0.4*smoothstep(1.0, -0.5, viewDir.y);
   float h = streaks*streaks;
   float g = h*h;
   g *= g;
 
-  vec3 sky = mix(zenithCol, horizonCol, f*f);
-  sky += (0.1*streaks + 2.0*g*g*g + h*h*h)*vec3(2.0,0.5,0.0);
-  sky += 0.25*streaks*spectrum(sin(2.0*viewDir.x*viewDir.y+t));
+  vec3 horizonCol = mix(skycol.horizon, NL_END_STREAK, 1.0);
+  vec3 sky = mix(skycol.zenith, horizonCol, f*f*f);
+  sky += (0.1*streaks + 2.0*g*g*g + h*h*h)*mixHorizon;
+  sky += 0.2*streaks*horizonCol;
 
   return sky;
+}
+#elif NL_END_SKY_TYPE == 1
+vec3 renderEndSky(nl_skycolor skycol, vec3 viewDir, float t){
+  vec3 sky = vec3_splat(0.0);
+  viewDir.y = smoothstep(-1.2,1.5,abs(viewDir.y));
+  viewDir.x += 0.004*sin(10.0*viewDir.y - t + viewDir.z);
+
+  float a = atan2(viewDir.x, viewDir.z);
+
+  float s = sin(a*6.0 + 0.5*t);
+  s = s*s;
+  s *= 0.0 + 0.6*sin(a*11.0 - 0.22*t);
+  float g = smoothstep(1.8-s, -1.2, viewDir.y);
+
+  float f = (0.5*g + 1.5*smoothstep(1.2,-0.2,viewDir.y));
+  float h = (1.2*g + 0.8*smoothstep(1.2,-0.4,viewDir.y));
+
+  sky += mix(skycol.zenith, mix(skycol.horizon, mix(skycol.horizon, NL_END_STREAK, 0.35), g), f*f);
+  sky += mix(skycol.horizon, mix(skycol.horizon, NL_END_STREAK, 0.35), g)*(g*g*g*g*0.6 + 0.4*h*h*h*h);
+
+  return sky;
+}
+
+#endif
+
+// Blackhole center for manual control (don't change)
+#define NL_BH_CENTER_X 0.7
+#define NL_BH_CENTER_Y 0.25
+#define NL_BH_CENTER_Z 0.6
+
+vec4 renderBlackhole(vec3 vdir, float t) {
+  t *= NL_BH_SPEED;
+
+  float r = NL_BH_DIR;
+  //r += 0.0001 * t;
+  vec3 vr = vdir;
+
+  //vr.xy = mat2(cos(r), -sin(r), sin(r), cos(r)) * vr.xy;
+  // manual calculation mat2 to fix windows compiling
+  float cx = cos(r);
+  float sx = sin(r);
+  vr.xy = vec2(cx*vr.x - sx*vr.y, sx*vr.x + cx*vr.y);
+  //r *= 2.0;
+
+  vec3 bhCenter = vec3(NL_BH_CENTER_X, NL_BH_CENTER_Y, NL_BH_CENTER_Z);
+  bhCenter.xy = vec2(cx*bhCenter.x - sx*bhCenter.y, sx*bhCenter.x + cx*bhCenter.y);
+
+  vec3 vd = vr - bhCenter;
+    
+  float nl = sin(8.0*vd.x + t)*sin(8.0*vd.y - t)*sin(8.0*vd.z + t);
+  nl = mix(nl, sin(4.0*vd.x + t)*sin(4.0*vd.y - t), 0.5);
+
+  float a = atan2(vd.x, vd.z);
+  float d = NL_BH_DIST*length(vd + 0.002*nl);
+
+  float d0 = (0.6 - d) / 0.6;
+  float dm0 = 1.0 - max(d0, 0.0);
+    
+  float gl = 1.0 - clamp(-0.2*d0, 0.0, 1.0);
+  float gla = pow(1.0 - min(abs(d0), 1.0), 6.0);
+  float gl8 = pow(gl, 6.0); 
+
+  float hole = 0.9*pow(dm0, 20.0) + 0.1*pow(dm0, 3.0);
+  float bh = (gla + 0.7*gl8 + 0.2*gl8*gl8)*hole;
+
+  float df = sin(2.0*a - 3.0*d + 20.0*pow(1.2 - d, 3.0) + t*0.5);
+  df *= 0.85 + 0.1*sin(6.0*a + d + 2.0*t - 2.0*df);
+  bh *= 1.0 + pow(df, 3.0)*hole*max(1.0 - bh, 0.0);
+
+  vec3 col = bh*3.5*mix(NL_BH_COL_LOW, NL_BH_COL_HIGH, smoothstep(0.0, 1.0, bh));
+  return vec4(col, hole);
+}
+
+vec3 distortByBlackhole(vec3 vdir, float t, float strength) {
+  // Rotation of viewdir and blackhole center to the same space
+  float r = NL_BH_DIR;
+  float cx = cos(r);
+  float sx = sin(r);
+
+  // Blackhole center after rotation
+  vec3 bhCenter = vec3(NL_BH_CENTER_X, NL_BH_CENTER_Y, NL_BH_CENTER_Z);
+  bhCenter.xy = vec2(cx*bhCenter.x - sx*bhCenter.y, sx*bhCenter.x + cx*bhCenter.y);
+
+  // Viewdir is also rotated to blackhole space
+  vec3 vdir_rot = vdir;
+  vdir_rot.xy = vec2(cx*vdir.x - sx*vdir.y, sx*vdir.x + cx*vdir.y);
+
+  vec3 toBH = bhCenter - vdir_rot;
+  float dist = length(toBH);
+  float effect = smoothstep(0.6, 0.4, dist);
+  vec3 dir = normalize(vdir_rot - bhCenter);
+  float bend = strength*effect/(dist+0.2);
+
+  vdir_rot = normalize(mix(vdir_rot, dir, bend));
+  // Inverse rotation to return to the original viewdir space
+  float icx = cos(-r);
+  float isx = sin(-r);
+  vdir_rot.xy = vec2(icx*vdir_rot.x - isx*vdir_rot.y, isx*vdir_rot.x + icx*vdir_rot.y);
+
+  return vdir_rot;
 }
 
 vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 FOG_COLOR, float t) {
@@ -133,7 +233,7 @@ vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 FOG_
   viewDir.y = -viewDir.y;
 
   if (env.end) {
-    sky = renderEndSky(skycol.horizon, skycol.zenith, viewDir, t);
+    sky = renderEndSky(skycol, viewDir, t);
   } else {
     sky = renderOverworldSky(skycol, viewDir);
     #ifdef NL_RAINBOW
@@ -142,15 +242,15 @@ vec3 nlRenderSky(nl_skycolor skycol, nl_environment env, vec3 viewDir, vec3 FOG_
     #ifdef NL_UNDERWATER_STREAKS
       if (env.underwater) {
         float a = atan2(viewDir.x, viewDir.z);
-        float grad = 0.5 + 0.5*viewDir.y;
-        grad *= grad;
+        float grad = 0.5 + 0.5 * viewDir.y;
+        grad = pow(grad, 6.0);
         float spread = (0.5 + 0.5*sin(3.0*a + 0.2*t + 2.0*sin(5.0*a - 0.4*t)));
         spread *= (0.5 + 0.5*sin(3.0*a - sin(0.5*t)))*grad;
         spread += (1.0-spread)*grad;
         float streaks = spread*spread;
         streaks *= streaks;
         streaks = (spread + 3.0*grad*grad + 4.0*streaks*streaks);
-        sky += 2.0*streaks*skycol.horizon;
+        sky += 2.0 * streaks * skycol.horizon;
       } else 
     #endif
     if (!env.nether) {
@@ -213,9 +313,12 @@ vec3 nlRenderShootingStar(vec3 viewDir, vec3 FOG_COLOR, float t) {
 
 // Galaxy stars - needs further optimization
 vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
-  if (env.underwater) {
-    return vec3_splat(0.0);
-  }
+  #ifdef GALAXY_STARS
+  #else
+    if (env.underwater) {
+      return vec3_splat(0.0);
+    }
+  #endif
 
   t *= NL_GALAXY_SPEED;
 
@@ -223,6 +326,7 @@ vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
   float cosb = sin(0.2*t);
   float sinb = cos(0.2*t);
   vdir.xy = mul(mat2(cosb, sinb, -sinb, cosb), vdir.xy);
+  //vdir.xy = mat2(cosb, sinb, -sinb, cosb) * vdir.xy;
 
   // noise
   float n0 = 0.5 + 0.5*sin(5.0*vdir.x)*sin(5.0*vdir.y - 0.5*t)*sin(5.0*vdir.z + 0.5*t);
@@ -235,6 +339,11 @@ vec3 nlRenderGalaxy(vec3 vdir, vec3 fogColor, nl_environment env, float t) {
   float gd = vdir.x + 0.1*vdir.y + 0.1*sin(10.0*vdir.z + 0.2*t);
   float st = n1*n2*n3*n3*(1.0+70.0*gd*gd);
   st = (1.0-st)/(1.0+400.0*st);
+  if (env.end) {
+    float gf = 1.0 - (vdir.x*vdir.x + 0.03*n1 + 0.2*n0);
+    vec3 stars = mix(vec3(1.2, 1.0, 0.8), NL_END_STREAK*3.5, gf);
+    return vec3_splat(st) + st*gf*2.2*stars;
+  }
   vec3 stars = (0.8 + 0.2*sin(vec3(8.0,6.0,10.0)*(2.0*n1+0.8*n2) + vec3(0.0,0.4,0.82)))*st;
 
   // glow
