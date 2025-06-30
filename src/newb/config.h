@@ -67,8 +67,8 @@
 #define NL_CLOUDY_FOG 0.4         // [toggle] 0.0 subtle - 0.8 dense fog clouds
 
 /* Sky colors - zenith=top, horizon=bottom */
-#define NL_DAY_ZENITH_COL    vec3(0.1,0.4,1.0)
-#define NL_DAY_HORIZON_COL   vec3(0.3,0.75,1.0)
+#define NL_DAY_ZENITH_COL    vec3(0.15,0.38,0.85)
+#define NL_DAY_HORIZON_COL   vec3(0.55,0.78,0.95)
 #define NL_NIGHT_ZENITH_COL  vec3(0.004,0.024,0.04)
 #define NL_NIGHT_HORIZON_COL vec3(0.159,0.151,0.211)
 #define NL_RAIN_ZENITH_COL   vec3(0.85,0.9,1.0)
@@ -81,7 +81,7 @@
 #define NL_END_SKY_TYPE    1
 #define NL_END_ZENITH_COL  vec3(0.08, 0.001, 0.1)
 #define NL_END_HORIZON_COL vec3(0.4, 0.02, 0.4)
-#define NL_END_STREAK      vec3(0.320, 0.200, 0.740)
+#define NL_END_STREAK      vec3(0.95, 0.45, 0.15)
 
 /* Rainbow */
 #define NL_RAINBOW         // [toggle] enable rainbow in sky
@@ -183,7 +183,7 @@
 #define NL_GALAXY_VIBRANCE 0.7          // 0.0 white - 1.0 colorful
 #define NL_GALAXY_SPEED 0.1            // 0.01 slow motion - 0.2 fast motion
 #define NL_GALAXY_DAY_VISIBILITY 0.1    // 0.0 invisible - 1.0 visible
-#define NL_END_GALAXY_STARS      0.5     // [toggle] 0.1 dim ~ 4.0 bright (auto distorted when blackhole is enabled)
+#define NL_END_GALAXY_STARS      4.0     // [toggle] 0.1 dim ~ 4.0 bright (auto distorted when blackhole is enabled)
 
 /* Chunk loading slide in animation */
 #define NL_CHUNK_LOAD_ANIM 140.0 // [toggle] -600.0 fall from top ~ 600.0 rise from bottom
@@ -220,8 +220,8 @@
 #define NL_BH_COL_LOW  vec3(0.02, 0.01, 0.05)
 #define NL_BH_COL_HIGH vec3(0.9, 0.4, 0.1)
 #define NL_BH_DIR      1.96     // 3.14 radius
-#define NL_BH_DIST     4.0      // 1.0 close - 4.0 far
-#define NL_BH_SPEED    0.8      // 0.0 static - 2.0 violent
+#define NL_BH_DIST     1.5      // 1.0 close - 4.0 far
+#define NL_BH_SPEED    1.2      // 0.0 static - 2.0 violent
 
 /*
   NEWB SHADER SUBPACK CONFIG
