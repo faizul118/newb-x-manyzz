@@ -177,27 +177,5 @@ vec4 nlLavaNoise(vec3 tiledCpos, float t) {
   n *= n;
   return vec4(mix(vec3(0.7, 0.4, 0.0), vec3_splat(1.5), n),n);
 }
-//test reflection
-float sunAngle = radians(45.0);
-
-vec3 sunPos = normalize(vec3(cos(sunAngle), sin(sunAngle), cos(sunAngle) * sin(sunAngle)));
-
-float ndotl = max(dot(worldNormal, sunPos), 0.2); // 0.2 = soft shadow
-
- const vec3 ambientColor = vec3(0.02, 0.04, 0.08);
- const vec3 diffuseColor = vec3(1.0); // Can be material or texture color
-float ambientStrength = 1.0;
-float diffuseStrength = 1.0;
-
-vec3 lighting = ambientColor + ndotl * diffuseColor;
-
-diffuse.rgb *= lighting;
-
-vec3 reflection;
-if(env.end){
-reflection = EndSky;
-}else{
-reflection = sky;
-}
 
 #endif

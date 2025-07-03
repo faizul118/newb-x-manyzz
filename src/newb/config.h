@@ -69,13 +69,13 @@
 /* Sky colors - zenith=top, horizon=bottom */
 #define NL_DAY_ZENITH_COL    vec3(0.15,0.38,0.85)
 #define NL_DAY_HORIZON_COL   vec3(0.55,0.78,0.95)
-#define NL_NIGHT_ZENITH_COL  vec3(0.004,0.024,0.04)
-#define NL_NIGHT_HORIZON_COL vec3(0.159,0.151,0.211)
+#define NL_NIGHT_ZENITH_COL  vec3(0.01,0.015,0.03)
+#define NL_NIGHT_HORIZON_COL vec3(0.12,0.13,0.18)
 #define NL_RAIN_ZENITH_COL   vec3(0.85,0.9,1.0)
 #define NL_RAIN_HORIZON_COL  vec3(1.0,1.0,1.0)
-#define NL_DAWN_ZENITH_COL   vec3(0.015,0.045,0.1)
-#define NL_DAWN_HORIZON_COL  vec3(0.9,0.3,0.3)
-#define NL_DAWN_EDGE_COL     vec3(1.0,0.4,0.2)
+#define NL_DAWN_ZENITH_COL   vec3(0.05,0.08,0.15)
+#define NL_DAWN_HORIZON_COL  vec3(0.85,0.45,0.35)
+#define NL_DAWN_EDGE_COL     vec3(1.0,0.6,0.3)
 
 /* The end sky colors */
 #define NL_END_SKY_TYPE    1
@@ -220,7 +220,7 @@
 #define NL_BH_COL_LOW  vec3(0.02, 0.01, 0.05)
 #define NL_BH_COL_HIGH vec3(0.9, 0.4, 0.1)
 #define NL_BH_DIR      1.96     // 3.14 radius
-#define NL_BH_DIST     1.5      // 1.0 close - 4.0 far
+#define NL_BH_DIST     1.8      // 1.0 close - 4.0 far
 #define NL_BH_SPEED    1.2      // 0.0 static - 2.0 violent
 
 /*
