@@ -37,10 +37,10 @@
 #define NL_TINT_HIGH vec3(1.0,0.8,0.4) // color tint for light tone
 
 /* Terrain lighting */
-#define NL_SUN_INTENSITY 2.7   // 0.5 weak ~ 5.0 bright
+#define NL_SUN_INTENSITY 3.5   // 0.5 weak ~ 5.0 bright
 #define NL_TORCH_INTENSITY 1.75  // 0.5 weak ~ 3.0 bright
-#define NL_NIGHT_BRIGHTNESS 1.0 // 0.0 dark ~ 2.0 bright
-#define NL_CAVE_BRIGHTNESS 0.5  // 0.0 dark ~ 2.0 bright
+#define NL_NIGHT_BRIGHTNESS 1.5 // 0.0 dark ~ 2.0 bright
+#define NL_CAVE_BRIGHTNESS 1.0  // 0.0 dark ~ 2.0 bright
 #define NL_SHADOW_INTENSITY 1.0 // 0.0 no shadow ~ 1.0 strong shadow
 #define NL_BLINKING_TORCH     // [toggle] flickering light
 //#define NL_CLOUD_SHADOW       // [toggle] cloud shadow (simple clouds only)
@@ -51,7 +51,7 @@
 #define NL_NIGHT_SUN_COL   vec3(0.15,0.2,0.3)
 
 /* Ambient light on terrain (light that is added everywhere) */
-#define NL_NETHER_AMBIENT vec3(1.0,0.1,0.1)
+#define NL_NETHER_AMBIENT vec3(1.0,0.5,0.5)
 #define NL_END_AMBIENT    vec3(0.2,0.2,1.0)
 
 /* Torch colors */
@@ -107,7 +107,7 @@
 #define NL_WATER_WAVE_SPEED  1.0  // 0.2 calm ~ 2.0 turbulent
 #define NL_WATER_TEX_OPACITY 0.77  // 0.0 plain water ~ 1.0 vanilla water texture
 #define NL_WATER_WAVE             // [toggle] wave effect
-#define NL_WATER_CLOUD_REFLECTION // [toggle] simple clouds/aurora reflection
+#define NL_WATER_CLOUD_AURORA_REFLECTION // [toggle] simple clouds/aurora reflection
 #define NL_WATER_REFL_MASK      // [toggle] fake water reflection mask
 #define NL_WATER_TINT vec3(0.8,0.85,1.0)
 
@@ -179,7 +179,7 @@
 #define NL_SHOOTING_STAR_DELAY 64.0 // 0.0 no delay ~ 100.0 long time (100 secs)
 
 /* Galaxy */
-#define NL_GALAXY_STARS 0.5           // [toggle] 0.1 dim - 4.0 bright
+#define NL_GALAXY_STARS 1.5           // [toggle] 0.1 dim - 4.0 bright
 #define NL_GALAXY_VIBRANCE 0.7          // 0.0 white - 1.0 colorful
 #define NL_GALAXY_SPEED 0.1            // 0.01 slow motion - 0.2 fast motion
 #define NL_GALAXY_DAY_VISIBILITY 0.1    // 0.0 invisible - 1.0 visible
@@ -241,7 +241,7 @@
   #undef NL_LAVA_NOISE
   #undef NL_WEATHER_SPECK
   #undef NL_SHOOTING_STAR
-  #undef NL_WATER_CLOUD_REFLECTION
+  #undef NL_WATER_CLOUD_AURORA_REFLECTION
   #undef NL_UNDERWATER_STREAKS
   #undef NL_RAIN_MIST_OPACITY
   #undef NL_CLOUDY_FOG
@@ -253,6 +253,10 @@
   #define NL_NIGHT_BRIGHTNESS 100.0
   #undef NL_CAVE_BRIGHTNESS
   #define NL_CAVE_BRIGHTNESS 100.0
+#endif
+
+#ifdef NO_FOG
+  #undef NL_FOG
 #endif
 
 #ifdef VANILLA_CLOUDS
