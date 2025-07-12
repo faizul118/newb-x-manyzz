@@ -1,5 +1,5 @@
 * text eol=lf
-*.bat eol=crlf
+*.bat eol=lf
 
 *.png binary
 *.jpg binary
